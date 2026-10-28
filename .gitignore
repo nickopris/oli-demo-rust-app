@@ -1,0 +1,6 @@
+/target
+.env*
+.ddev/rust-demo/bin/
+.DS_Store
+.superpowers/
+.claude/
