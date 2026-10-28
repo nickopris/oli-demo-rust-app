@@ -32,15 +32,25 @@ fn raw_i64(v: &Value) -> Option<i64> {
 }
 
 fn text(v: &Value) -> Option<String> {
-    v.as_str().map(str::trim).filter(|s| !s.is_empty()).map(String::from)
+    v.as_str()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(String::from)
 }
 
 pub fn parse_chart(v: &Value) -> anyhow::Result<ChartData> {
     let r = v
         .pointer("/chart/result/0")
         .filter(|r| !r.is_null())
-        .ok_or_else(|| anyhow!("chart has no result: {}", v.pointer("/chart/error").unwrap_or(&Value::Null)))?;
-    let ts = r["timestamp"].as_array().context("chart has no timestamps")?;
+        .ok_or_else(|| {
+            anyhow!(
+                "chart has no result: {}",
+                v.pointer("/chart/error").unwrap_or(&Value::Null)
+            )
+        })?;
+    let ts = r["timestamp"]
+        .as_array()
+        .context("chart has no timestamps")?;
     let q = &r["indicators"]["quote"][0];
     let (closes, volumes) = (q["close"].as_array(), q["volume"].as_array());
     let (closes, volumes) = closes.zip(volumes).context("chart has no quote series")?;
@@ -49,7 +59,11 @@ pub fn parse_chart(v: &Value) -> anyhow::Result<ChartData> {
         .zip(closes)
         .zip(volumes)
         .filter_map(|((t, c), v)| {
-            Some(Bar { t: t.as_i64()?, close: c.as_f64()?, volume: v.as_f64()? })
+            Some(Bar {
+                t: t.as_i64()?,
+                close: c.as_f64()?,
+                volume: v.as_f64()?,
+            })
         })
         .collect();
     let meta = &r["meta"];
@@ -65,7 +79,11 @@ pub fn parse_summary(v: &Value, c: &mut Company) -> anyhow::Result<()> {
     let pct = |p: &str| r.pointer(p).and_then(raw).map(|f| f * 100.0);
     let num = |p: &str| r.pointer(p).and_then(raw);
 
-    if let Some(name) = r.pointer("/price/longName").and_then(text).or_else(|| r.pointer("/price/shortName").and_then(text)) {
+    if let Some(name) = r
+        .pointer("/price/longName")
+        .and_then(text)
+        .or_else(|| r.pointer("/price/shortName").and_then(text))
+    {
         c.name = name;
     }
     c.sector = r
@@ -101,7 +119,12 @@ pub fn parse_summary(v: &Value, c: &mut Company) -> anyhow::Result<()> {
         .map(|h| {
             h.iter()
                 .rev()
-                .filter_map(|e| Some(Earning { actual: raw(&e["epsActual"])?, estimate: raw(&e["epsEstimate"])? }))
+                .filter_map(|e| {
+                    Some(Earning {
+                        actual: raw(&e["epsActual"])?,
+                        estimate: raw(&e["epsEstimate"])?,
+                    })
+                })
                 .collect()
         })
         .unwrap_or_default();
@@ -159,7 +182,10 @@ impl YahooClient {
             .timeout(Duration::from_secs(10))
             .build()
             .expect("reqwest client builds");
-        Self { http, crumb: Mutex::new(None) }
+        Self {
+            http,
+            crumb: Mutex::new(None),
+        }
     }
 
     async fn get_json(&self, url: &str) -> anyhow::Result<Value> {
@@ -172,7 +198,9 @@ impl YahooClient {
     }
 
     async fn chart(&self, ticker: &str, range: &str) -> anyhow::Result<ChartData> {
-        let url = format!("https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={range}&interval=1d");
+        let url = format!(
+            "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={range}&interval=1d"
+        );
         parse_chart(&self.get_json(&url).await?)
     }
 
@@ -181,7 +209,11 @@ impl YahooClient {
         if refresh || crumb.is_none() {
             // Sets the session cookie; the response itself is a 404 and is ignored.
             let _ = self.http.get("https://fc.yahoo.com").send().await;
-            let res = self.http.get("https://query1.finance.yahoo.com/v1/test/getcrumb").send().await?;
+            let res = self
+                .http
+                .get("https://query1.finance.yahoo.com/v1/test/getcrumb")
+                .send()
+                .await?;
             if !res.status().is_success() {
                 bail!("Yahoo crumb request returned {}", res.status());
             }
@@ -214,13 +246,19 @@ impl YahooClient {
         let url = format!(
             "https://query1.finance.yahoo.com/v1/finance/search?q={ticker}&newsCount={MAX_NEWS}&quotesCount=0"
         );
-        self.get_json(&url).await.map(|v| parse_news(&v)).unwrap_or_default()
+        self.get_json(&url)
+            .await
+            .map(|v| parse_news(&v))
+            .unwrap_or_default()
     }
 
     /// Full company data. Chart and summary are required; news is best effort.
     pub async fn company(&self, ticker: &str) -> anyhow::Result<Company> {
-        let (chart, summary, news) =
-            tokio::join!(self.chart(ticker, "1y"), self.summary(ticker), self.news(ticker));
+        let (chart, summary, news) = tokio::join!(
+            self.chart(ticker, "1y"),
+            self.summary(ticker),
+            self.news(ticker)
+        );
         let chart = chart?;
         let mut c = Company {
             ticker: ticker.to_string(),
@@ -244,6 +282,10 @@ impl YahooClient {
             (Some(p), Some(prev)) if prev != 0.0 => Some((p - prev) / prev * 100.0),
             _ => None,
         };
-        Ok(Quote { ticker: ticker.to_string(), price, change_pct })
+        Ok(Quote {
+            ticker: ticker.to_string(),
+            price,
+            change_pct,
+        })
     }
 }

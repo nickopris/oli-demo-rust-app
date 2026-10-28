@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Run cargo inside Docker so no Rust toolchain is needed on the host.
-# Registry and target dirs live in named volumes for speed.
+# Registry, target and rustup dirs live in named volumes for speed; rustfmt
+# and clippy are added on first use.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -15,8 +16,14 @@ fi
 
 exec docker run --rm "${tty_flags[@]}" "${port_flags[@]}" \
   -v "$PWD":/app -w /app \
+  -v oli-demo-rustup:/usr/local/rustup \
   -v oli-demo-cargo:/usr/local/cargo/registry \
   -v oli-demo-target:/app/target \
   -e CARGO_TERM_COLOR=never \
   -e DRUPAL_BASE_URL -e DRUPAL_PUBLIC_URL \
-  rust:1-bookworm cargo "$@"
+  rust:1-bookworm bash -c '
+    case "$1" in
+      fmt) rustup component add rustfmt >/dev/null 2>&1 ;;
+      clippy) rustup component add clippy >/dev/null 2>&1 ;;
+    esac
+    exec cargo "$@"' cargo "$@"

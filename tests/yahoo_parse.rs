@@ -11,7 +11,10 @@ fn fixture(name: &str) -> Value {
 fn chart_parses_a_year_of_bars() {
     let c = parse_chart(&fixture("chart_dis.json")).unwrap();
     assert!(c.bars.len() >= 200);
-    assert!(c.bars.iter().all(|b| b.close.is_finite() && b.volume.is_finite()));
+    assert!(c
+        .bars
+        .iter()
+        .all(|b| b.close.is_finite() && b.volume.is_finite()));
     assert!(c.bars.windows(2).all(|w| w[0].t < w[1].t));
     assert!(c.price.is_some());
     assert_eq!(c.exchange.as_deref(), Some("NYSE"));
@@ -26,7 +29,9 @@ fn chart_skips_null_closes() {
 
 #[test]
 fn chart_without_result_is_an_error() {
-    assert!(parse_chart(&json!({"chart": {"result": null, "error": {"code": "Not Found"}}})).is_err());
+    assert!(
+        parse_chart(&json!({"chart": {"result": null, "error": {"code": "Not Found"}}})).is_err()
+    );
 }
 
 #[test]
@@ -40,7 +45,10 @@ fn summary_fills_company() {
     assert!((c.dividend.yield_pct.unwrap() - 1.17).abs() < 1e-9);
     assert!(c.dividend.growth_5y_pct.is_none());
     let a = c.analysts.unwrap();
-    assert_eq!((a.strong_buy, a.buy, a.hold, a.sell, a.strong_sell), (8, 18, 12, 1, 0));
+    assert_eq!(
+        (a.strong_buy, a.buy, a.hold, a.sell, a.strong_sell),
+        (8, 18, 12, 1, 0)
+    );
     // most recent quarter first
     assert!((c.earnings[0].actual - 1.31).abs() < 1e-9);
     assert_eq!(c.market_cap, Some(190_700_000_000.0));

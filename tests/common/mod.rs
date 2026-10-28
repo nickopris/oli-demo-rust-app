@@ -22,7 +22,10 @@ pub struct FakeSource {
 
 impl FakeSource {
     pub fn new(mode: Mode) -> Self {
-        Self { mode, calls: Arc::new(AtomicUsize::new(0)) }
+        Self {
+            mode,
+            calls: Arc::new(AtomicUsize::new(0)),
+        }
     }
     pub fn calls(&self) -> usize {
         self.calls.load(Ordering::SeqCst)
@@ -43,11 +46,19 @@ impl FakeSource {
 impl LiveSource for FakeSource {
     async fn company(&self, t: &str) -> anyhow::Result<Company> {
         self.act().await?;
-        Ok(Company { ticker: t.to_string(), name: "LIVE".into(), ..Default::default() })
+        Ok(Company {
+            ticker: t.to_string(),
+            name: "LIVE".into(),
+            ..Default::default()
+        })
     }
     async fn quote(&self, t: &str) -> anyhow::Result<Quote> {
         self.act().await?;
-        Ok(Quote { ticker: t.to_string(), price: Some(1.0), change_pct: Some(0.5) })
+        Ok(Quote {
+            ticker: t.to_string(),
+            price: Some(1.0),
+            change_pct: Some(0.5),
+        })
     }
 }
 
@@ -58,7 +69,10 @@ use oli_demo_rust_app::web::AppState;
 
 /// App state backed by a fake Yahoo and an unreachable Drupal.
 pub fn test_state(mode: Mode) -> AppState<FakeSource> {
-    let cfg = MarketConfig { timeout: Duration::from_millis(100), ..MarketConfig::default() };
+    let cfg = MarketConfig {
+        timeout: Duration::from_millis(100),
+        ..MarketConfig::default()
+    };
     AppState {
         market: Arc::new(MarketData::new(FakeSource::new(mode), embedded(), cfg)),
         tips: Arc::new(TipSource::new(

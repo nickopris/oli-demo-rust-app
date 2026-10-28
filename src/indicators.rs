@@ -74,18 +74,34 @@ pub fn macd(c: &[f64]) -> Option<Macd> {
     let ema12 = ema_series(c, 12);
     let ema26 = ema_series(c, 26);
     // ema26[i] is bar 25 + i; the matching ema12 value is at index 14 + i.
-    let series: Vec<f64> = ema26.iter().enumerate().map(|(i, v)| ema12[14 + i] - v).collect();
+    let series: Vec<f64> = ema26
+        .iter()
+        .enumerate()
+        .map(|(i, v)| ema12[14 + i] - v)
+        .collect();
     let signal = ema_series(&series, 9);
     let (line, signal) = (*series.last()?, *signal.last()?);
-    Some(Macd { line, signal, histogram: line - signal })
+    Some(Macd {
+        line,
+        signal,
+        histogram: line - signal,
+    })
 }
 
 /// Bollinger bands at 2 population standard deviations.
 pub fn bollinger(c: &[f64], period: usize) -> Option<Bands> {
     let mid = sma(c, period)?;
-    let var = c[c.len() - period..].iter().map(|v| (v - mid).powi(2)).sum::<f64>() / period as f64;
+    let var = c[c.len() - period..]
+        .iter()
+        .map(|v| (v - mid).powi(2))
+        .sum::<f64>()
+        / period as f64;
     let sd = var.sqrt();
-    Some(Bands { upper: mid + 2.0 * sd, mid, lower: mid - 2.0 * sd })
+    Some(Bands {
+        upper: mid + 2.0 * sd,
+        mid,
+        lower: mid - 2.0 * sd,
+    })
 }
 
 /// On-balance volume. Empty when the inputs are too short or mismatched.
@@ -124,5 +140,9 @@ pub fn linear_slope(v: &[f64]) -> f64 {
         num += dx * (x - mean);
         den += dx * dx;
     }
-    if den == 0.0 { 0.0 } else { num / den / mean.abs() }
+    if den == 0.0 {
+        0.0
+    } else {
+        num / den / mean.abs()
+    }
 }

@@ -61,12 +61,18 @@ pub struct MarketData<S> {
 }
 
 fn now_secs() -> i64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
 }
 
 fn curated(ticker: &str) -> Option<&'static str> {
     let t = ticker.trim();
-    CURATED.iter().map(|(c, _)| *c).find(|c| c.eq_ignore_ascii_case(t))
+    CURATED
+        .iter()
+        .map(|(c, _)| *c)
+        .find(|c| c.eq_ignore_ascii_case(t))
 }
 
 impl<S: LiveSource> MarketData<S> {
@@ -86,14 +92,21 @@ impl<S: LiveSource> MarketData<S> {
     }
 
     fn yahoo_down(&self) -> bool {
-        self.down_until.lock().unwrap().is_some_and(|until| Instant::now() < until)
+        self.down_until
+            .lock()
+            .unwrap()
+            .is_some_and(|until| Instant::now() < until)
     }
 
     fn mark_down(&self) {
         *self.down_until.lock().unwrap() = Some(Instant::now() + self.cfg.backoff);
     }
 
-    fn fresh<T: Clone>(&self, map: &Mutex<HashMap<String, Cached<T>>>, t: &str) -> Option<(T, i64)> {
+    fn fresh<T: Clone>(
+        &self,
+        map: &Mutex<HashMap<String, Cached<T>>>,
+        t: &str,
+    ) -> Option<(T, i64)> {
         let map = map.lock().unwrap();
         map.get(t)
             .filter(|c| c.at.elapsed() < self.cfg.ttl)
@@ -110,28 +123,39 @@ impl<S: LiveSource> MarketData<S> {
             match tokio::time::timeout(self.cfg.timeout, self.source.company(t)).await {
                 Ok(Ok(c)) => {
                     let as_of = now_secs();
-                    self.companies
-                        .lock()
-                        .unwrap()
-                        .insert(t.to_string(), Cached { at: Instant::now(), as_of, value: c.clone() });
+                    self.companies.lock().unwrap().insert(
+                        t.to_string(),
+                        Cached {
+                            at: Instant::now(),
+                            as_of,
+                            value: c.clone(),
+                        },
+                    );
                     return Some((c, as_of));
                 }
                 _ => self.mark_down(),
             }
         }
-        self.snapshot_company(t).map(|c| (c.clone(), self.snapshot.fetched_at))
+        self.snapshot_company(t)
+            .map(|c| (c.clone(), self.snapshot.fetched_at))
     }
 
     fn snapshot_quote(&self, t: &str) -> Quote {
         let c = self.snapshot_company(t);
-        let closes: Vec<f64> = c.map(|c| c.bars.iter().map(|b| b.close).collect()).unwrap_or_default();
+        let closes: Vec<f64> = c
+            .map(|c| c.bars.iter().map(|b| b.close).collect())
+            .unwrap_or_default();
         let price = c.and_then(|c| c.price).or(closes.last().copied());
         let prev = closes.len().checked_sub(2).map(|i| closes[i]);
         let change_pct = match (price, prev) {
             (Some(p), Some(prev)) if prev != 0.0 => Some((p - prev) / prev * 100.0),
             _ => None,
         };
-        Quote { ticker: t.to_string(), price, change_pct }
+        Quote {
+            ticker: t.to_string(),
+            price,
+            change_pct,
+        }
     }
 
     /// Prices for every curated ticker, live where possible, in curated order.
@@ -160,7 +184,11 @@ impl<S: LiveSource> MarketData<S> {
                     Ok(Ok(Ok(q))) => {
                         self.quotes.lock().unwrap().insert(
                             q.ticker.clone(),
-                            Cached { at: Instant::now(), as_of: now_secs(), value: q.clone() },
+                            Cached {
+                                at: Instant::now(),
+                                as_of: now_secs(),
+                                value: q.clone(),
+                            },
                         );
                         live.insert(q.ticker.clone(), q);
                     }

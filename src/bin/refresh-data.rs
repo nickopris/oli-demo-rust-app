@@ -28,8 +28,15 @@ async fn main() {
             }
         }
     }
-    let fetched_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
-    let json = serde_json::to_string_pretty(&Snapshot { fetched_at, companies }).unwrap();
+    let fetched_at = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    let json = serde_json::to_string_pretty(&Snapshot {
+        fetched_at,
+        companies,
+    })
+    .unwrap();
     std::fs::write(PATH, json + "\n").expect("write snapshot");
     println!("Wrote {PATH}");
 }

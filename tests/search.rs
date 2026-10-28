@@ -37,8 +37,15 @@ fn empty_or_junk_query_returns_nothing() {
 
 #[test]
 fn snapshot_holds_curated_tickers_in_order() {
-    let tickers: Vec<&str> = embedded().companies.iter().map(|c| c.ticker.as_str()).collect();
+    let tickers: Vec<&str> = embedded()
+        .companies
+        .iter()
+        .map(|c| c.ticker.as_str())
+        .collect();
     let curated: Vec<&str> = CURATED.iter().map(|(t, _)| *t).collect();
     assert_eq!(tickers, curated);
-    assert_eq!(curated, ["DIS", "AAPL", "MSFT", "NVDA", "TSLA", "KO", "AMZN", "NFLX", "GOOGL", "META"]);
+    assert_eq!(
+        curated,
+        ["DIS", "AAPL", "MSFT", "NVDA", "TSLA", "KO", "AMZN", "NFLX", "GOOGL", "META"]
+    );
 }

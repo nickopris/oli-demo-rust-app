@@ -26,7 +26,10 @@ pub struct AppState<S> {
 
 impl<S> Clone for AppState<S> {
     fn clone(&self) -> Self {
-        Self { market: Arc::clone(&self.market), tips: Arc::clone(&self.tips) }
+        Self {
+            market: Arc::clone(&self.market),
+            tips: Arc::clone(&self.tips),
+        }
     }
 }
 
@@ -72,13 +75,22 @@ async fn search_route(Query(p): Query<SearchParams>) -> impl IntoResponse {
     Json(hits)
 }
 
-async fn company<S: LiveSource>(State(st): State<AppState<S>>, Path(ticker): Path<String>) -> Response {
+async fn company<S: LiveSource>(
+    State(st): State<AppState<S>>,
+    Path(ticker): Path<String>,
+) -> Response {
     let (data, tip) = tokio::join!(st.market.company(&ticker), st.tips.random_tip());
     match data {
-        Some((c, as_of)) => Json(json!({ "card": build_card(&c, as_of), "tip": tip })).into_response(),
+        Some((c, as_of)) => {
+            Json(json!({ "card": build_card(&c, as_of), "tip": tip })).into_response()
+        }
         None => {
             let tickers: Vec<&str> = CURATED.iter().map(|(t, _)| *t).collect();
-            (StatusCode::NOT_FOUND, Json(json!({ "error": "not_found", "tickers": tickers }))).into_response()
+            (
+                StatusCode::NOT_FOUND,
+                Json(json!({ "error": "not_found", "tickers": tickers })),
+            )
+                .into_response()
         }
     }
 }

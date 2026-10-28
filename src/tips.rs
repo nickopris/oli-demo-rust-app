@@ -37,7 +37,9 @@ pub fn parse_tips(v: &Value, public_url: &str) -> Vec<Tip> {
                     Some(Tip {
                         title: a["title"].as_str()?.to_string(),
                         text: a["field_tip_text"].as_str().unwrap_or_default().to_string(),
-                        url: a["drupal_internal__nid"].as_i64().map(|nid| format!("{base}/node/{nid}")),
+                        url: a["drupal_internal__nid"]
+                            .as_i64()
+                            .map(|nid| format!("{base}/node/{nid}")),
                         offline: false,
                     })
                 })
@@ -47,7 +49,10 @@ pub fn parse_tips(v: &Value, public_url: &str) -> Vec<Tip> {
 }
 
 fn pick<T>(items: &[T]) -> &T {
-    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.subsec_nanos()).unwrap_or(0);
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.subsec_nanos())
+        .unwrap_or(0);
     &items[nanos as usize % items.len()]
 }
 
@@ -59,8 +64,15 @@ pub struct TipSource {
 
 impl TipSource {
     pub fn new(base_url: String, public_url: String, timeout: Duration) -> Self {
-        let http = reqwest::Client::builder().timeout(timeout).build().expect("reqwest client builds");
-        Self { http, base_url: base_url.trim_end_matches('/').to_string(), public_url }
+        let http = reqwest::Client::builder()
+            .timeout(timeout)
+            .build()
+            .expect("reqwest client builds");
+        Self {
+            http,
+            base_url: base_url.trim_end_matches('/').to_string(),
+            public_url,
+        }
     }
 
     async fn fetch(&self) -> anyhow::Result<Vec<Tip>> {
@@ -80,7 +92,12 @@ impl TipSource {
             Ok(tips) if !tips.is_empty() => pick(&tips).clone(),
             _ => {
                 let (title, text) = pick(&FALLBACK_TIPS);
-                Tip { title: title.to_string(), text: text.to_string(), url: None, offline: true }
+                Tip {
+                    title: title.to_string(),
+                    text: text.to_string(),
+                    url: None,
+                    offline: true,
+                }
             }
         }
     }

@@ -15,8 +15,15 @@ async fn get(uri: &str) -> (StatusCode, Option<String>, Vec<u8>) {
         .await
         .unwrap();
     let status = res.status();
-    let ctype = res.headers().get(header::CONTENT_TYPE).map(|v| v.to_str().unwrap().to_string());
-    (status, ctype, res.into_body().collect().await.unwrap().to_bytes().to_vec())
+    let ctype = res
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .map(|v| v.to_str().unwrap().to_string());
+    (
+        status,
+        ctype,
+        res.into_body().collect().await.unwrap().to_bytes().to_vec(),
+    )
 }
 
 async fn get_json(uri: &str) -> (StatusCode, Value) {
@@ -28,8 +35,16 @@ async fn get_json(uri: &str) -> (StatusCode, Value) {
 async fn tickers_in_curated_order() {
     let (s, v) = get_json("/api/tickers").await;
     assert_eq!(s, StatusCode::OK);
-    let t: Vec<&str> = v.as_array().unwrap().iter().map(|q| q["ticker"].as_str().unwrap()).collect();
-    assert_eq!(t, ["DIS", "AAPL", "MSFT", "NVDA", "TSLA", "KO", "AMZN", "NFLX", "GOOGL", "META"]);
+    let t: Vec<&str> = v
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|q| q["ticker"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        t,
+        ["DIS", "AAPL", "MSFT", "NVDA", "TSLA", "KO", "AMZN", "NFLX", "GOOGL", "META"]
+    );
     assert!(v[0]["name"].as_str().unwrap().contains("Disney"));
     assert!(v[0]["price"].is_number());
 }

@@ -37,7 +37,10 @@ fn bollinger_flat_series_collapses() {
 
 #[test]
 fn obv_accumulates_signed_volume() {
-    assert_eq!(obv(&[1., 2., 2., 1.], &[10., 20., 30., 40.]), vec![0., 20., 20., -20.]);
+    assert_eq!(
+        obv(&[1., 2., 2., 1.], &[10., 20., 30., 40.]),
+        vec![0., 20., 20., -20.]
+    );
     assert!(obv(&[1.], &[1.]).is_empty());
 }
 
