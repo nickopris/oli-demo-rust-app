@@ -5,6 +5,7 @@ edition = "2021"
 description = "Stock card demo app for One Line Installer"
 license = "MIT"
 publish = false
+default-run = "oli-demo-rust-app"
 
 [[bin]]
 name = "oli-demo-rust-app"
