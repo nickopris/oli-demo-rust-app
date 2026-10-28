@@ -4,5 +4,6 @@ pub mod model;
 pub mod signals;
 pub mod snapshot;
 pub mod tickers;
+pub mod tips;
 pub mod web;
 pub mod yahoo;
