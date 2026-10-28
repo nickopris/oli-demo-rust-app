@@ -1,0 +1,35 @@
+{
+  "label": "Rust stock card demo",
+  "description": "Drupal CMS plus a Rust web app in the same DDEV project. The Rust app shows stock cards (Yahoo Finance, with an embedded snapshot fallback) and pulls a random investing tip from Drupal's JSON:API.",
+  "ddev_project_type": "drupal11",
+  "is_drupal": true,
+  "agents": ["claude"],
+  "skills": [
+    { "repo": "ivanboring/drupal-module-finder", "skills": ["drupal-module-finder"] },
+    "obra/superpowers",
+    { "repo": "https://github.com/vercel-labs/skills", "skills": ["find-skills"] },
+    { "repo": "https://github.com/vercel-labs/agent-browser", "skills": ["agent-browser"] }
+  ],
+  "deny_commands": ["git push", "ssh"],
+  "install_modules": ["jsonapi"],
+  "launch_path": ":8443",
+  "agents_md": [
+    "This project also runs a Rust web app (source in src/, served on port 8443 by a DDEV web_extra_daemon). It reads investing tips from Drupal's JSON:API at /jsonapi/node/investing_tip."
+  ],
+  "append_welcome_text": [
+    "{BOLD}{GREEN}Rust stock card app:{RESET} {SITE_URL}:8443",
+    "Drupal: {DRUPAL_LOGIN_URL} ({DRUPAL_USERNAME} / {DRUPAL_PASSWORD})",
+    "Try: Disney, AAPL, Nvidia. Edit an Investing tip in Drupal, then search again to see it change."
+  ],
+  "hooks": {
+    "before_ddev_start": [
+      { "script": "./rust-demo-ddev.sh", "weight": 0, "where": "host" }
+    ],
+    "create_drupal_site_done": [
+      { "script": "./fetch-binary.sh", "weight": 10, "where": "web" }
+    ],
+    "provision_from_config_done": [
+      { "script": "./setup-tips.sh", "weight": 10, "where": "web" }
+    ]
+  }
+}
