@@ -50,3 +50,21 @@ impl LiveSource for FakeSource {
         Ok(Quote { ticker: t.to_string(), price: Some(1.0), change_pct: Some(0.5) })
     }
 }
+
+use oli_demo_rust_app::market::{MarketConfig, MarketData};
+use oli_demo_rust_app::snapshot::embedded;
+use oli_demo_rust_app::tips::TipSource;
+use oli_demo_rust_app::web::AppState;
+
+/// App state backed by a fake Yahoo and an unreachable Drupal.
+pub fn test_state(mode: Mode) -> AppState<FakeSource> {
+    let cfg = MarketConfig { timeout: Duration::from_millis(100), ..MarketConfig::default() };
+    AppState {
+        market: Arc::new(MarketData::new(FakeSource::new(mode), embedded(), cfg)),
+        tips: Arc::new(TipSource::new(
+            "http://127.0.0.1:9".into(),
+            "http://127.0.0.1:9".into(),
+            Duration::from_millis(300),
+        )),
+    }
+}
