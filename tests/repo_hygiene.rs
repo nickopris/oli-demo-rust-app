@@ -114,19 +114,23 @@ fn tracked(rel: &str) -> bool {
         .unwrap_or(false)
 }
 
-// Drupal CMS ships without the core config module; setup-tips.sh needs it
-// for `drush config:import --partial`.
+// setup-tips.sh must work on a stock Drupal CMS: no config module, and
+// bundle displays Drupal may already have created on its own. So it builds
+// the content type with the entity API instead of `drush config:import`.
 #[test]
-fn install_modules_enable_what_setup_tips_needs() {
+fn tip_setup_does_not_rely_on_config_import() {
     let cfg: serde_json::Value = serde_json::from_str(&read(".drupalaibp/config.json")).unwrap();
-    let modules: Vec<&str> = cfg["install_modules"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|m| m.as_str().unwrap())
-        .collect();
-    assert!(read(".drupalaibp/setup-tips.sh").contains("config:import --partial"));
-    for needed in ["jsonapi", "config"] {
-        assert!(modules.contains(&needed), "install_modules lacks {needed}");
+    assert_eq!(cfg["install_modules"], serde_json::json!(["jsonapi"]));
+    assert!(!read(".drupalaibp/setup-tips.sh").contains("config:import"));
+    assert!(!root().join(".drupalaibp/tip-config").exists());
+    let seed = read(".drupalaibp/seed-tips.php");
+    for api in [
+        "NodeType::",
+        "FieldStorageConfig::",
+        "FieldConfig::",
+        "getFormDisplay(",
+        "getViewDisplay(",
+    ] {
+        assert!(seed.contains(api), "seed-tips.php does not use {api}");
     }
 }

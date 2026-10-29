@@ -44,7 +44,7 @@ To offer it from an umbrella repo, add an entry to that repo's
 | `.drupalaibp/config.json` | | Drupal CMS, `jsonapi`, agents and skills, opens port 9443 |
 | `.drupalaibp/rust-demo-ddev.sh` | `before_ddev_start`, host | Writes `.ddev/config.rust-demo.yaml` (a `web_extra_daemon` plus router port 9443/9080) |
 | `.drupalaibp/fetch-binary.sh` | `create_drupal_site_done`, web | Downloads the binary for the container's architecture; builds from source if that fails |
-| `.drupalaibp/setup-tips.sh` | `provision_from_config_done`, web | Imports the `investing_tip` content type and seeds five tips |
+| `.drupalaibp/setup-tips.sh` | `provision_from_config_done`, web | Creates the `investing_tip` content type and seeds five tips |
 
 ## Develop locally
 

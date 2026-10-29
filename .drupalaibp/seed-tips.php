@@ -2,12 +2,63 @@
 
 /**
  * @file
- * Seeds five investing tips. Run with `drush php:script`.
+ * Creates the Investing tip content type and seeds five tips. Run with
+ * `drush php:script`.
+ *
+ * Every step loads what already exists before creating it, so the script is
+ * safe to re-run and tolerates displays Drupal created on its own.
  *
  * Keep in sync with FALLBACK_TIPS in src/tips.rs.
  */
 
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
+use Drupal\node\Entity\NodeType;
+
+if (!NodeType::load('investing_tip')) {
+  NodeType::create([
+    'type' => 'investing_tip',
+    'name' => 'Investing tip',
+    'description' => 'Short, general investing tips shown by the Rust stock card app.',
+    'new_revision' => TRUE,
+    'display_submitted' => FALSE,
+  ])->save();
+}
+
+if (!FieldStorageConfig::loadByName('node', 'field_tip_text')) {
+  FieldStorageConfig::create([
+    'field_name' => 'field_tip_text',
+    'entity_type' => 'node',
+    'type' => 'string_long',
+  ])->save();
+}
+
+if (!FieldConfig::loadByName('node', 'investing_tip', 'field_tip_text')) {
+  FieldConfig::create([
+    'field_name' => 'field_tip_text',
+    'entity_type' => 'node',
+    'bundle' => 'investing_tip',
+    'label' => 'Tip text',
+    'required' => TRUE,
+  ])->save();
+}
+
+$displays = \Drupal::service('entity_display.repository');
+$displays->getFormDisplay('node', 'investing_tip')
+  ->setComponent('field_tip_text', [
+    'type' => 'string_textarea',
+    'weight' => 1,
+    'settings' => ['rows' => 3],
+  ])
+  ->save();
+$displays->getViewDisplay('node', 'investing_tip')
+  ->setComponent('field_tip_text', [
+    'type' => 'basic_string',
+    'label' => 'hidden',
+    'weight' => 0,
+  ])
+  ->save();
 
 $existing = \Drupal::entityQuery('node')
   ->condition('type', 'investing_tip')
