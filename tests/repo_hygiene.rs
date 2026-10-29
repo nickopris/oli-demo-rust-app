@@ -113,3 +113,20 @@ fn tracked(rel: &str) -> bool {
         .map(|o| !o.stdout.is_empty())
         .unwrap_or(false)
 }
+
+// Drupal CMS ships without the core config module; setup-tips.sh needs it
+// for `drush config:import --partial`.
+#[test]
+fn install_modules_enable_what_setup_tips_needs() {
+    let cfg: serde_json::Value = serde_json::from_str(&read(".drupalaibp/config.json")).unwrap();
+    let modules: Vec<&str> = cfg["install_modules"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|m| m.as_str().unwrap())
+        .collect();
+    assert!(read(".drupalaibp/setup-tips.sh").contains("config:import --partial"));
+    for needed in ["jsonapi", "config"] {
+        assert!(modules.contains(&needed), "install_modules lacks {needed}");
+    }
+}
