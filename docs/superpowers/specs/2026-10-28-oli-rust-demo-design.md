@@ -15,7 +15,7 @@ browser opens on the Rust app → the presenter types "Disney" or "DIS" → a ri
 stock card appears, including an investing tip fetched live from Drupal's JSON:API.
 
 Reference implementation for look and data shape: the Node app at
-`/Users/nickopris/Work/finnguide` (much larger; take inspiration only). Target look:
+the author's private finnguide app (much larger; take inspiration only). Target look:
 the mockup screenshot shared in the brainstorm (dark UI, search bar + GET DATA /
 RESET, one expanded company card). OLI source reference: branch `2.0.x` of
 `https://git.drupalcode.org/project/one_line_installer` (docs in

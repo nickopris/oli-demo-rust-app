@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Hook: `before_ddev_start` event (weight 0), where=host.
 # Writes the DDEV config that runs the Rust app as a web_extra_daemon and
-# publishes it through the router on 8443/8080. It has to exist before the
+# publishes it through the router on 9443/9080. It has to exist before the
 # first `ddev start`: in a Drupal build OLI copies the repo in only after the
 # site is scaffolded, which would need an extra restart.
 set -euo pipefail
@@ -22,8 +22,8 @@ web_extra_daemons:
 web_extra_exposed_ports:
   - name: rust-demo
     container_port: 3000
-    http_port: 8080
-    https_port: 8443
+    http_port: 9080
+    https_port: 9443
 YAML
 
 cat > "$root/.ddev/rust-demo/run.sh" <<'SH'
@@ -39,4 +39,4 @@ exec "$bin"
 SH
 chmod +x "$root/.ddev/rust-demo/run.sh"
 
-echo "Rust demo: DDEV daemon and port 8443 configured."
+echo "Rust demo: DDEV daemon and port 9443 configured."

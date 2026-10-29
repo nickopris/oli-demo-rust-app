@@ -1,6 +1,21 @@
-/target
-.env*
+# This file is also copied into the Drupal project One Line Installer builds,
+# so it covers both the Rust app and a Composer-managed Drupal site.
+
+# Rust
+/target/
 .ddev/rust-demo/bin/
+
+# Drupal / Composer
+/vendor/
+/web/core/
+/web/modules/contrib/
+/web/themes/contrib/
+/web/profiles/contrib/
+/web/libraries/
+/web/sites/*/files/
+/web/sites/*/private/
+/recipes/
+
+# Local
+.env*
 .DS_Store
-.superpowers/
-.claude/

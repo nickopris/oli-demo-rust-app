@@ -12,12 +12,12 @@
   ],
   "deny_commands": ["git push", "ssh"],
   "install_modules": ["jsonapi"],
-  "launch_path": ":8443",
+  "launch_path": ":9443",
   "agents_md": [
-    "This project also runs a Rust web app (source in src/, served on port 8443 by a DDEV web_extra_daemon). It reads investing tips from Drupal's JSON:API at /jsonapi/node/investing_tip."
+    "This project also runs a Rust web app (source in src/, served on port 9443 by a DDEV web_extra_daemon). It reads investing tips from Drupal's JSON:API at /jsonapi/node/investing_tip."
   ],
   "append_welcome_text": [
-    "{BOLD}{GREEN}Rust stock card app:{RESET} {SITE_URL}:8443",
+    "{BOLD}{GREEN}Rust stock card app:{RESET} {SITE_URL}:9443",
     "Drupal: {DRUPAL_LOGIN_URL} ({DRUPAL_USERNAME} / {DRUPAL_PASSWORD})",
     "Try: Disney, AAPL, Nvidia. Edit an Investing tip in Drupal, then search again to see it change."
   ],

@@ -118,7 +118,7 @@ README.md, .gitignore
 **Interfaces:**
 - Produces (all on `&[f64]`, oldest first):
   `sma(c, period) -> Option<f64>`, `ema_series(c, period) -> Vec<f64>`, `rsi(c, period) -> Option<f64>` (Wilder, needs `period + 1` values), `macd(c) -> Option<Macd { line, signal, histogram: f64 }>` (12/26/9, needs ≥ 34 values), `bollinger(c, period) -> Option<Bands { upper, mid, lower: f64 }>` (2σ population std), `obv(closes, volumes) -> Vec<f64>`, `linear_slope(v) -> f64`, `clamp(v, lo, hi) -> f64`.
-- Port from `/Users/nickopris/Work/finnguide/src/scorer.js` lines 5–103 (read-only reference).
+- Port from finnguide's `src/scorer.js` (the author's private app) lines 5–103 (read-only reference).
 
 - [ ] **Step 1: Write failing tests:**
   - `sma(&[1.,2.,3.,4.,5.], 5) == Some(3.0)`; `sma(.., 6) == None`
@@ -366,7 +366,7 @@ Scripts (`#!/usr/bin/env bash`, `set -euo pipefail`, idempotent, header comment 
 
 ### Task 13: End-to-end through One Line Installer
 
-- [ ] **Step 1:** Ask the user before running, because it creates a DDEV project and takes several minutes. Run it in a fresh directory, e.g. `~/Work/oli-rust-e2e`, using the 2.0.x branch one-liner from the OLI README with `--config-url https://github.com/nickopris/oli-demo-rust-app --yolo`.
+- [ ] **Step 1:** Ask the user before running, because it creates a DDEV project and takes several minutes. Run it in a fresh directory, e.g. a new `oli-rust-e2e` folder, using the 2.0.x branch one-liner from the OLI README with `--config-url https://github.com/nickopris/oli-demo-rust-app --yolo`.
 - [ ] **Step 2: Verify:**
   - OLI output shows the fetch-binary step succeeding.
   - The browser opens `https://<project>.ddev.site:8443`.
