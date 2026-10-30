@@ -134,3 +134,12 @@ fn tip_setup_does_not_rely_on_config_import() {
         assert!(seed.contains(api), "seed-tips.php does not use {api}");
     }
 }
+
+// Drupal CMS's ECA model "Enable moderation for new content types" puts every
+// new type in the editorial workflow, which leaves seeded tips as drafts.
+#[test]
+fn tip_setup_takes_tips_out_of_moderation() {
+    let seed = read(".drupalaibp/seed-tips.php");
+    assert!(seed.contains("removeEntityTypeAndBundle('node', 'investing_tip')"));
+    assert!(seed.contains("setPublished()"));
+}

@@ -15,6 +15,7 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use Drupal\workflows\Entity\Workflow;
 
 if (!NodeType::load('investing_tip')) {
   NodeType::create([
@@ -60,14 +61,32 @@ $displays->getViewDisplay('node', 'investing_tip')
   ])
   ->save();
 
-$existing = \Drupal::entityQuery('node')
-  ->condition('type', 'investing_tip')
-  ->accessCheck(FALSE)
-  ->count()
-  ->execute();
+// Drupal CMS opts every new content type into its editorial workflow, which
+// would leave the tips as unpublished drafts. Tips are plain demo content.
+$unmoderated = FALSE;
+if (\Drupal::moduleHandler()->moduleExists('content_moderation')) {
+  foreach (Workflow::loadMultipleByType('content_moderation') as $workflow) {
+    $type = $workflow->getTypePlugin();
+    if ($type->appliesToEntityTypeAndBundle('node', 'investing_tip')) {
+      $type->removeEntityTypeAndBundle('node', 'investing_tip');
+      $workflow->save();
+      $unmoderated = TRUE;
+    }
+  }
+}
 
-if ($existing > 0) {
-  echo "Investing tips already present ($existing).\n";
+$storage = \Drupal::entityTypeManager()->getStorage('node');
+$existing = $storage->loadByProperties(['type' => 'investing_tip']);
+
+if ($existing) {
+  // Tips seeded while the type was moderated are drafts: publish them.
+  if ($unmoderated) {
+    foreach ($existing as $node) {
+      $node->setPublished()->save();
+    }
+    echo 'Published ' . count($existing) . " investing tips.\n";
+  }
+  echo 'Investing tips already present (' . count($existing) . ").\n";
   return;
 }
 
